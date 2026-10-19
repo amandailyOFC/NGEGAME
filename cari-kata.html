@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cari Kata Member JKT48</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #2a0815 0%, #120309 100%);
+            --text-color: #ffffff;
+            --border-color: #5c1b2f;
+            --active-border: #ff3366;
+            --correct-bg: rgba(255, 51, 102, 0.6);
+            --found-bg: #10b981;
+            --board-bg: #ffffff;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            touch-action: none; /* Mencegah layar scroll saat drag di HP */
+        }
+
+        .top-nav {
+            width: 100%;
+            max-width: 600px;
+            padding: 15px 15px 0;
+            box-sizing: border-box;
+        }
+
+        .back-btn {
+            color: #ffb3c6;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255, 51, 102, 0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 51, 102, 0.3);
+            color: #ffffff;
+            border-color: var(--active-border);
+        }
+
+        header {
+            text-align: center;
+            padding: 10px 0;
+            width: 100%;
+        }
+
+        h1 {
+            margin: 0 0 5px 0;
+            font-size: 2rem;
+            background: linear-gradient(to right, #ff4b2b, #ff416c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #ffb3c6;
+            margin-bottom: 15px;
+        }
+
+        /* Papan Grid Cari Kata */
+        #word-board {
+            background-color: var(--board-bg);
+            padding: 10px;
+            border-radius: 12px;
+            border: 4px solid var(--border-color);
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 2px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            user-select: none;
+        }
+
+        .cell {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #1a1a1a;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.1s;
+        }
+
+        @media (min-width: 500px) {
+            .cell { width: 35px; height: 35px; font-size: 1.3rem; }
+        }
+
+        .cell.selected {
+            background-color: var(--active-border);
+            color: white;
+        }
+
+        .cell.found {
+            background-color: var(--found-bg);
+            color: white;
+            box-shadow: 0 0 5px rgba(16, 185, 129, 0.5);
+        }
+
+        /* Daftar Kata di Bawah */
+        #word-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            max-width: 500px;
+            padding: 0 15px 30px;
+        }
+
+        .word-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #ffffff;
+            transition: all 0.3s;
+            border: 1px solid var(--border-color);
+        }
+
+        .word-item.found-word {
+            background: var(--found-bg);
+            color: white;
+            text-decoration: line-through;
+            border-color: var(--found-bg);
+            opacity: 0.6;
+        }
+
+        /* Modal Overlay */
+        #modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-box {
+            background: linear-gradient(135deg, #1f1c2c, #928dab);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #ff416c;
+            box-shadow: 0 10px 25px rgba(255, 65, 108, 0.4);
+            max-width: 80%;
+        }
+
+        .modal-message {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .btn-restart {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-restart:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+    <div class="top-nav">
+        <a href="index.html" class="back-btn">⬅ Menu Utama</a>
+    </div>
+
+    <header>
+        <h1>Cari Nama</h1>
+        <div class="subtitle">Temukan 6 nama member yang tersembunyi (Tarik garisnya!)</div>
+    </header>
+
+    <div id="word-board"></div>
+    <div id="word-list"></div>
+
+    <div id="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-message">🎉 Hebat!<br>Semua member ditemukan.</div>
+            <button class="btn-restart" onclick="initGame()">Main Lagi</button>
+        </div>
+    </div>
+
+    <script>
+        const ALL_MEMBERS = [
+            "ANIN", "LIA", "LANA", "ELIN", "CYNTHIA", "FIONY", "FRITZY", "GRACIE", "LILY", "INDAH", 
+            "TRISHA", "MICHIE", "NAYLA", "DELYNN", "OLLA", "FREYA", "ELLA", "GITA", "GREESEL", "ELI", 
+            "LYN", "MARSHA", "NACHIA", "OLINE", "NALA", "ARALIE", "CHRISTY", "ERINE", "ONIEL", "DENA", 
+            "DESY", "FENI", "JESSI", "KATHRINA", "LULU", "LEVI", "MUTHE", "RAISHA", "RIBKA", "KIMMY", 
+            "FERA", "VIRGI", "RILLY", "CARISSA", "BELLA", "FAHIRA", "RARA", "GIA", "HEIDI", "MAIRA", 
+            "EKIN", "JEMIMA", "MAXINE", "MIKAELA", "INTAN", "JAZZY", "RALYNE", "SONA"
+        ].map(w => w.toUpperCase().replace(/\s/g, ""));
+
+        const BOARD_SIZE = 12;
+        const WORDS_TO_FIND = 6;
+        
+        let grid = [];
+        let activeWords = [];
+        let foundWordsList = [];
+        
+        let isSelecting = false;
+        let startCell = null;
+        let selectedPath = [];
+
+        const boardEl = document.getElementById("word-board");
+        const listEl = document.getElementById("word-list");
+        const modalEl = document.getElementById("modal-overlay");
+
+        function getRandomInt(max) { return Math.floor(Math.random() * max); }
+
+        function generateGrid() {
+            grid = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(""));
+            activeWords = [];
+            
+            // Pilih 6 kata acak
+            let shuffled = [...ALL_MEMBERS].sort(() => 0.5 - Math.random());
+            let wordsToPlace = shuffled.slice(0, WORDS_TO_FIND);
+
+            // Arah: Kanan, Bawah, Diagonal Kanan-Bawah
+            const directions = [ [0,1], [1,0], [1,1] ];
+
+            wordsToPlace.forEach(word => {
+                let placed = false;
+                let attempts = 0;
+                while (!placed && attempts < 100) {
+                    let dir = directions[getRandomInt(directions.length)];
+                    let row = getRandomInt(BOARD_SIZE);
+                    let col = getRandomInt(BOARD_SIZE);
+                    
+                    if (canPlaceWord(word, row, col, dir[0], dir[1])) {
+                        placeWord(word, row, col, dir[0], dir[1]);
+                        activeWords.push(word);
+                        placed = true;
+                    }
+                    attempts++;
+                }
+            });
+
+            // Isi kotak kosong dengan huruf acak
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    if (grid[r][c] === "") {
+                        grid[r][c] = alphabet[getRandomInt(alphabet.length)];
+                    }
+                }
+            }
+        }
+
+        function canPlaceWord(word, row, col, dRow, dCol) {
+            if (row + (word.length * dRow) > BOARD_SIZE || row + (word.length * dRow) < -1) return false;
+            if (col + (word.length * dCol) > BOARD_SIZE || col + (word.length * dCol) < -1) return false;
+            
+            for (let i = 0; i < word.length; i++) {
+                let r = row + (i * dRow);
+                let c = col + (i * dCol);
+                if (grid[r][c] !== "" && grid[r][c] !== word[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function placeWord(word, row, col, dRow, dCol) {
+            for (let i = 0; i < word.length; i++) {
+                grid[row + (i * dRow)][col + (i * dCol)] = word[i];
+            }
+        }
+
+        function renderBoard() {
+            boardEl.innerHTML = "";
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    let cell = document.createElement("div");
+                    cell.className = "cell";
+                    cell.textContent = grid[r][c];
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    
+                    // Event Listener untuk Mouse & Touch
+                    cell.addEventListener("pointerdown", handlePointerDown);
+                    cell.addEventListener("pointerenter", handlePointerEnter);
+                    boardEl.appendChild(cell);
+                }
+            }
+            // Pointerup diletakkan di window agar tidak bug saat melepas klik di luar kotak
+            window.addEventListener("pointerup", handlePointerUp);
+        }
+
+        function renderList() {
+            listEl.innerHTML = "";
+            activeWords.forEach(word => {
+                let div = document.createElement("div");
+                div.className = "word-item";
+                div.id = `word-${word}`;
+                div.textContent = word;
+                listEl.appendChild(div);
+            });
+        }
+
+        function handlePointerDown(e) {
+            isSelecting = true;
+            startCell = { row: parseInt(e.target.dataset.row), col: parseInt(e.target.dataset.col) };
+            clearSelection();
+            selectCell(e.target);
+            selectedPath = [startCell];
+        }
+
+        function handlePointerEnter(e) {
+            if (!isSelecting) return;
+            let currentCell = { row: parseInt(e.target.dataset.row), col: parseInt(e.target.dataset.col) };
+            
+            // Validasi agar pemilihan hanya bisa garis lurus (Mendatar, Menurun, atau Diagonal)
+            let rDiff = currentCell.row - startCell.row;
+            let cDiff = currentCell.col - startCell.col;
+            
+            if (rDiff === 0 || cDiff === 0 || Math.abs(rDiff) === Math.abs(cDiff)) {
+                clearSelection();
+                selectedPath = [];
+                let steps = Math.max(Math.abs(rDiff), Math.abs(cDiff));
+                let rStep = rDiff === 0 ? 0 : rDiff / Math.abs(rDiff);
+                let cStep = cDiff === 0 ? 0 : cDiff / Math.abs(cDiff);
+                
+                for (let i = 0; i <= steps; i++) {
+                    let r = startCell.row + (i * rStep);
+                    let c = startCell.col + (i * cStep);
+                    selectedPath.push({row: r, col: c});
+                    let cellEl = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+                    if(cellEl) cellEl.classList.add("selected");
+                }
+            }
+        }
+
+        function handlePointerUp() {
+            if (!isSelecting) return;
+            isSelecting = false;
+            
+            // Dapatkan kata yang dibentuk dari jalur yang dipilih
+            let wordFormed = selectedPath.map(pos => grid[pos.row][pos.col]).join("");
+            let wordReversed = wordFormed.split("").reverse().join("");
+
+            if (activeWords.includes(wordFormed) && !foundWordsList.includes(wordFormed)) {
+                markAsFound(wordFormed, selectedPath);
+            } else if (activeWords.includes(wordReversed) && !foundWordsList.includes(wordReversed)) {
+                markAsFound(wordReversed, selectedPath);
+            }
+
+            clearSelection();
+        }
+
+        function markAsFound(word, path) {
+            foundWordsList.push(word);
+            document.getElementById(`word-${word}`).classList.add("found-word");
+            
+            path.forEach(pos => {
+                let cell = document.querySelector(`.cell[data-row='${pos.row}'][data-col='${pos.col}']`);
+                cell.classList.add("found");
+                cell.classList.remove("selected");
+            });
+
+            if (foundWordsList.length === WORDS_TO_FIND) {
+                setTimeout(() => { modalEl.style.display = "flex"; }, 500);
+            }
+        }
+
+        function clearSelection() {
+            document.querySelectorAll(".cell.selected").forEach(c => c.classList.remove("selected"));
+        }
+
+        function selectCell(cell) {
+            if(!cell.classList.contains("found")) cell.classList.add("selected");
+        }
+
+        function initGame() {
+            modalEl.style.display = "none";
+            foundWordsList = [];
+            generateGrid();
+            renderBoard();
+            renderList();
+        }
+
+        // Jalankan game
+        initGame();
+    </script>
+</body>
+</html>

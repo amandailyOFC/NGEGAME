@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tebak Skandal JKT48</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #1a0b12 0%, #0a0205 100%);
+            --text-color: #ffffff;
+            --border-color: #4a1525;
+            --active-border: #ff3366;
+            --correct-bg: #10b981;
+            --error-bg: #ef4444;
+            --input-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .top-nav {
+            width: 100%;
+            max-width: 600px;
+            padding: 15px 15px 0;
+            box-sizing: border-box;
+        }
+
+        .back-btn {
+            color: #ffb3c6;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255, 51, 102, 0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 51, 102, 0.3);
+            color: #ffffff;
+            border-color: var(--active-border);
+            transform: translateX(-3px);
+        }
+
+        header {
+            text-align: center;
+            padding: 10px 0;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 {
+            margin: 0 0 5px 0;
+            font-size: 2rem;
+            background: linear-gradient(to right, #ff4b2b, #ff416c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #ffb3c6;
+            margin-bottom: 20px;
+        }
+
+        /* Area Game Utama */
+        .game-container {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 25px 20px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            position: relative;
+        }
+
+        /* Badge Level Kesulitan */
+        .level-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .level-mudah {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: 1px solid #34d399;
+        }
+
+        .level-susah {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            color: white;
+            border: 1px solid #f87171;
+        }
+
+        .lives {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            letter-spacing: 5px;
+        }
+
+        .question-box {
+            font-size: 1.15rem;
+            font-weight: 500;
+            line-height: 1.6;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            border-top: 4px solid var(--active-border);
+            margin-bottom: 25px;
+            word-wrap: break-word;
+        }
+
+        /* Pilihan Ganda UI */
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background: var(--input-bg);
+            border: 2px solid var(--border-color);
+            color: #ffffff;
+            padding: 15px 10px;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .option-btn:hover {
+            border-color: var(--active-border);
+            background: rgba(255, 51, 102, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .option-btn.wrong {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--error-bg);
+            opacity: 0.6;
+            pointer-events: none;
+            animation: shake 0.4s;
+        }
+
+        .option-btn.correct {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--correct-bg);
+            pointer-events: none;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            min-height: 20px;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* Modal Overlay */
+        #modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-box {
+            background: linear-gradient(135deg, #1f1c2c, #928dab);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #ff416c;
+            width: 85%;
+            max-width: 400px;
+        }
+
+        .modal-message {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .modal-answer {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1rem;
+            color: #ffb3c6;
+            line-height: 1.5;
+        }
+
+        .modal-answer span {
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .modal-btn {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-nav">
+        <a href="index.html" class="back-btn">⬅ Menu Utama</a>
+    </div>
+
+    <header>
+        <h1>Tebak Skandal</h1>
+        <div class="subtitle">Uji pengetahuanmu tentang dark history grup ini!</div>
+    </header>
+
+    <div class="game-container">
+        <!-- Label Level Kesulitan -->
+        <div id="level-badge" class="level-badge">Level</div>
+
+        <div class="lives" id="lives-display">❤️❤️❤️</div>
+        
+        <div class="question-box" id="question-text">Memuat pertanyaan...</div>
+
+        <div class="options-container" id="options-container">
+            <!-- Tombol 4 pilihan akan dimuat di sini -->
+        </div>
+
+        <div class="feedback" id="feedback-text"></div>
+    </div>
+
+    <div id="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-message" id="modal-title"></div>
+            <div class="modal-answer" id="modal-desc"></div>
+            <button class="modal-btn" onclick="resetGame()">Main Lagi</button>
+        </div>
+    </div>
+
+    <script>
+        const MUDAH_DATA = [
+            { q: "Siapa ex-member yang kasusnya berfoto dengan pria yang memegang rokok?", a: "Jeane" },
+            { q: "Siapa ex-member yang kasusnya dengan member boyband dan dipangku?", a: "Ara" },
+            { q: "Siapa ex-member yang kasusnya dengan member boyband dan dipeluk?", a: "Chika" },
+            { q: "Siapa ex-member yang kasusnya dipangku sambil memegang mic?", a: "Flora" },
+            { q: "Siapa ex-member yang kasusnya mirror selfie dengan pacarnya dan sama-sama menggunakan baju putih?", a: "Gendis" },
+            { q: "Siapa ex-member yang kasusnya berfoto menggunakan jaket biru?", a: "Ella" },
+            { q: "Siapa ex-member yang kasusnya di warung kopi bersama pria?", a: "Indira" },
+            { q: "Siapa ex-member yang kasusnya selfie dengan pro player ML (Mobile Legends)?", a: "Amanda" },
+            { q: "Siapa ex-member yang kasusnya mirror selfie di eskalator mall bersama pria?", a: "Callie" },
+            { q: "Siapa ex-member yang kasusnya sempat mendapat sanksi bukan karena foto dengan pria, melainkan karena video dirinya menghisap vape di dalam mobil bocor?", a: "Zee" },
+            { q: "Siapa ex-member yang dipecat mendadak akhir tahun 2020 dengan alasan 'pelanggaran prosedur' tepat sebelum pengumuman restrukturisasi massal?", a: "Shalza" }
+        ];
+
+        const SUSAH_DATA = [
+            { q: "Siapa ex-member yang kasusnya tersebar karena foto liburan mesra bersama pacarnya di Labuan Bajo?", a: "Aby" },
+            { q: "Siapa ex-member yang kasusnya ketahuan karena video pacarnya sedang mengeringkan rambut sang member menggunakan hairdryer bocor?", a: "Dena" },
+            { q: "Siapa ex-member yang kasusnya ketahuan karena berfoto mirror selfie di depan cermin toilet mall bersama pacarnya yang memakai kaos hitam sambil memegang HP?", a: "Inge" },
+            { q: "Siapa ex-member yang kasusnya ketahuan setelah beredar foto dirinya sedang dirangkul oleh pria di bioskop, padahal saat itu ia baru menjabat sebagai Kapten Tim KIII?", a: "Viny" },
+            { q: "Siapa ex-member yang kasusnya viral karena foto candid dirangkul dari belakang oleh pacarnya bernama 'Fade' saat menghadiri festival musik?", a: "Tata" },
+            { q: "Siapa ex-member yang kasusnya ketahuan gara-gara foto mesra di dalam mobil bocor, lalu pacarnya mengunggah foto ucapan 'Happy Anniversary 17 Months'?", a: "Jeje" },
+            { q: "Siapa ex-member yang tertangkap kamera fans sedang berjalan berdua dengan pria di mall, lalu sempat mengklarifikasi bahwa pria itu adalah sepupunya?", a: "Stefi" },
+            { q: "Siapa dua ex-member yang kasusnya ketahuan karena video singkat mereka sedang nongkrong malam di kafe kawasan PIK bersama sekelompok pria tersebar barengan?", a: "Manda & Via" },
+            { q: "Siapa ex-member yang berfoto dengan teman pria menggunakan filter hitam-putih sambil memejamkan mata, tapi langsung minta maaf malamnya di teater?", a: "Eve" },
+            { q: "Siapa ex-member yang kasusnya ketahuan karena rekaman suara dari second account Instagram-nya bocor, berisi makian kasar yang ditujukan kepada Melody dan staf?", a: "Regina" },
+            { q: "Siapa ex-member yang dipecat mendadak karena secara ilegal mencantumkan kontak manajer pribadi di bio Instagram demi mengambil job syuting sinetron?", a: "Cigul" },
+            { q: "Siapa ex-member generasi 1 yang membuat heboh karena foto-foto masa lalunya saat berpacaran di zaman SMP bocor ke internet di awal grup berdiri?", a: "Cleo" }
+        ];
+
+        // Gabungkan semua jawaban untuk dijadikan pengecoh (distractor)
+        const ALL_ANSWERS = [...MUDAH_DATA, ...SUSAH_DATA].map(item => item.a);
+
+        let currentQuestion = {};
+        let lives = 3;
+
+        const levelBadgeEl = document.getElementById("level-badge");
+        const questionTextEl = document.getElementById("question-text");
+        const optionsContainer = document.getElementById("options-container");
+        const feedbackEl = document.getElementById("feedback-text");
+        const livesEl = document.getElementById("lives-display");
+        const modalOverlay = document.getElementById("modal-overlay");
+
+        function updateLivesDisplay() {
+            livesEl.textContent = "❤️".repeat(lives) + "🖤".repeat(3 - lives);
+        }
+
+        function initGame() {
+            lives = 3;
+            updateLivesDisplay();
+            feedbackEl.textContent = "";
+            modalOverlay.style.display = "none";
+
+            // 1. Tentukan secara acak apakah ambil dari soal MUDAH atau SUSAH
+            const isMudah = Math.random() > 0.5;
+            const dataPool = isMudah ? MUDAH_DATA : SUSAH_DATA;
+            
+            // Atur UI Level Badge
+            levelBadgeEl.textContent = isMudah ? "Level Mudah" : "Level Susah";
+            levelBadgeEl.className = `level-badge ${isMudah ? "level-mudah" : "level-susah"}`;
+
+            // 2. Pilih satu soal acak
+            currentQuestion = dataPool[Math.floor(Math.random() * dataPool.length)];
+            questionTextEl.textContent = currentQuestion.q;
+
+            // 3. Siapkan Pilihan Ganda (1 Jawaban Benar + 3 Pengecoh)
+            let options = [{ text: currentQuestion.a, isCorrect: true }];
+            let usedAnswers = [currentQuestion.a];
+
+            while(options.length < 4) {
+                let randomAnswer = ALL_ANSWERS[Math.floor(Math.random() * ALL_ANSWERS.length)];
+                if (!usedAnswers.includes(randomAnswer)) {
+                    options.push({ text: randomAnswer, isCorrect: false });
+                    usedAnswers.push(randomAnswer);
+                }
+            }
+
+            // Acak urutan tombol
+            options.sort(() => Math.random() - 0.5);
+
+            // 4. Render Tombol ke Layar
+            optionsContainer.innerHTML = "";
+            options.forEach(opt => {
+                let btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.textContent = opt.text;
+                btn.onclick = () => handleChoice(opt, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function handleChoice(selectedOption, buttonElement) {
+            if (lives <= 0) return;
+
+            if (selectedOption.isCorrect) {
+                buttonElement.classList.add("correct");
+                showModal("🎯 Tepat Sekali!", `Jawabannya adalah <span>${currentQuestion.a}</span>.<br><br>Kamu benar-benar mengikuti sejarah grup ini!`);
+            } else {
+                lives--;
+                updateLivesDisplay();
+                
+                buttonElement.classList.add("wrong");
+                feedbackEl.style.color = "var(--error-bg)";
+                feedbackEl.textContent = "❌ Tebakanmu salah. Ayo ingat-ingat lagi!";
+
+                if (lives === 0) {
+                    showModal("💀 Game Over", `Jawaban yang benar adalah:<br><br><span>${currentQuestion.a}</span>`);
+                }
+            }
+        }
+
+        function showModal(title, desc) {
+            setTimeout(() => {
+                document.getElementById("modal-title").innerHTML = title;
+                document.getElementById("modal-desc").innerHTML = desc;
+                modalOverlay.style.display = "flex";
+            }, 300);
+        }
+
+        function resetGame() {
+            initGame();
+        }
+
+        // Mulai Game
+        initGame();
+    </script>
+</body>
+</html>

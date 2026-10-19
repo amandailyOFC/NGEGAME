@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tebak Kata Jiko JKT48</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #2a0815 0%, #120309 100%);
+            --text-color: #ffffff;
+            --border-color: #5c1b2f;
+            --active-border: #ff3366;
+            --correct-bg: #10b981;
+            --error-bg: #ef4444;
+            --input-bg: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .top-nav {
+            width: 100%;
+            max-width: 600px;
+            padding: 15px 15px 0;
+            box-sizing: border-box;
+        }
+
+        .back-btn {
+            color: #ffb3c6;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255, 51, 102, 0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 51, 102, 0.3);
+            color: #ffffff;
+            border-color: var(--active-border);
+            transform: translateX(-3px);
+        }
+
+        header {
+            text-align: center;
+            padding: 10px 0;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 {
+            margin: 0 0 5px 0;
+            font-size: 2rem;
+            background: linear-gradient(to right, #ff4b2b, #ff416c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #ffb3c6;
+            margin-bottom: 20px;
+        }
+
+        .game-container {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 25px 20px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .lives {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            letter-spacing: 5px;
+        }
+        
+        .progress {
+            font-size: 0.85rem;
+            color: #d1d5db;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .jiko-box {
+            font-size: 1.2rem;
+            font-weight: 500;
+            line-height: 1.6;
+            background: rgba(255, 51, 102, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--active-border);
+            margin-bottom: 25px;
+            font-style: italic;
+            word-wrap: break-word;
+        }
+
+        .blank-word {
+            color: var(--active-border);
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background: var(--input-bg);
+            border: 2px solid var(--border-color);
+            color: #ffffff;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1.15rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            letter-spacing: 1px;
+            text-transform: capitalize;
+        }
+
+        .option-btn:hover {
+            border-color: var(--active-border);
+            background: rgba(255, 51, 102, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .option-btn.wrong {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--error-bg);
+            opacity: 0.6;
+            pointer-events: none;
+            animation: shake 0.4s;
+        }
+
+        .option-btn.correct {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--correct-bg);
+            pointer-events: none;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            min-height: 20px;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        #modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-box {
+            background: linear-gradient(135deg, #1f1c2c, #928dab);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #ff416c;
+            width: 85%;
+            max-width: 400px;
+        }
+
+        .modal-message {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .modal-answer {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1rem;
+            color: #ffb3c6;
+            line-height: 1.5;
+        }
+
+        .modal-answer span.highlight-member {
+            color: #10b981;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .modal-answer span.highlight-word {
+            color: white;
+            font-weight: bold;
+        }
+
+        .modal-btn {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-nav">
+        <a href="index.html" class="back-btn">⬅ Menu Utama</a>
+    </div>
+
+    <header>
+        <h1>Tebak Jiko</h1>
+        <div class="subtitle">Pilih kata yang tepat! Soal terjawab tidak akan diulang.</div>
+    </header>
+
+    <div class="game-container">
+        <div class="progress" id="progress-display">Tersisa: 0 Jiko</div>
+        <div class="lives" id="lives-display">❤️❤️❤️</div>
+        
+        <div class="jiko-box" id="jiko-text">Memuat Jikoshoukai...</div>
+
+        <div class="options-container" id="options-container"></div>
+
+        <div class="feedback" id="feedback-text"></div>
+    </div>
+
+    <div id="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-message" id="modal-title"></div>
+            <div class="modal-answer" id="modal-desc"></div>
+            <button class="modal-btn" id="modal-next-btn" onclick="nextQuestion()">Lanjut</button>
+        </div>
+    </div>
+
+    <script>
+        const JIKO_DATA = [
+            { name: "Feni", jiko: "Matahari yang indah yang akan selalu memberikan kehangatan setiap harinya." },
+            { name: "Gita", jiko: "Diam bukan berarti tak memperhatikanmmu." },
+            { name: "Christy", jiko: "Peduli dan berbaik hati, siapakah dia?" },
+            { name: "Olla", jiko: "Dengan keajaibanku, aku akan membuat kalian selalu tertawa. Halo, Aku Olla si mechanic girl!" },
+            { name: "Freya", jiko: "Gadis koleris yang suka berimajinasi, terangi harimu dengan senyuman karamelku." },
+            { name: "Eli", jiko: "Bagai lembayung senja, dengan energi kegembiraanku, Aku akan menghangatkan suasana." },
+            { name: "Jessi", jiko: "Suka menari dan akan selalu berusaha untuk menjadi sumber energimu." },
+            { name: "Muthe", jiko: "Dengan kelincahanku, Aku akan menari setiap hari. Panggil Aku, Mu mu mu mu-the!" },
+            { name: "Oniel", jiko: "Seperti teka-teki, kalian akan selalu penasaran denganku." },
+            { name: "Fiony", jiko: "Seperti simfoni yang menenangkan hati." },
+            { name: "Lulu", jiko: "Terang seperti bulan, bersinar seperti bintang." },
+            { name: "Kathrina", jiko: "Never miss a chance to be a star!" },
+            { name: "Indah", jiko: "Tak banyak bicara, bercerita melalui tulisan." },
+            { name: "Marsha", jiko: "Seperti pizza yang selalu dinanti-nantikan semua orang, selalu nantikan aku, ya?" },
+            { name: "Lia", jiko: "Si social butterfly yang energik dan periang!" },
+            { name: "Ella", jiko: "Ohayo! Konnichiwa! Oyasumi! Aku ingin ada di setiap harimu." },
+            { name: "Lyn", jiko: "Seperti ombak laut yang tenang, tiba-tiba aku akan menyapumu dengan banyak cinta!" },
+            { name: "Raisha", jiko: "Kalau sakura itu kembang, Aku itu kembanggaanmu!" },
+            { name: "Gracie", jiko: "Manis seperti gulali, imut seperti kelinci. Cie cie cie, Gracie!" },
+            { name: "Greesel", jiko: "Pandangan mataku akan menyinari hatimu bagaikan kunang-kunang di malam hari." },
+            { name: "Anin", jiko: "Si mungil hadir semanis mangga." },
+            { name: "Elin", jiko: "Semanis permen kapas dan seindah bunga lavender." },
+            { name: "Cynthia", jiko: "Semangatku terus menerus meluap. POP! POP! Aku Cynthia yang selalu semangat!" },
+            { name: "Danella", jiko: "Tok-tok! Si penari yang akan menarikmu ke duniaku!" },
+            { name: "Daisy", jiko: "Seperti bunga daisy, aku akan memancarkan kesegaran dan kebahagiaan!" },
+            { name: "Michie", jiko: "Always your number one, till infinity and beyond. Hello everyone, it's Michie!" },
+            { name: "Aralie", jiko: "Seperti bunga yang mekar, aku akan membuat kamu, kamu, dan kamu terbayang-bayang." },
+            { name: "Delynn", jiko: "Nyemangatin dan ngangenin, siapa yang kamu pikirin? Pyong pyong, Aku Delynn!" },
+            { name: "Lana", jiko: "Dengan kekuatan bulan, aku akan menyihirmu dengan pesonaku." },
+            { name: "Erine", jiko: "Hadir dengan seribu kejutan, Checkmate! Siap memenangkan hatimu." },
+            { name: "Fritzy", jiko: "Abracadabra! Si pesulap yang siap membuat hatimu terpikat. It's me, Fritzy!" },
+            { name: "Lily", jiko: "Papipapipum! Aku akan mengejutkanmu dengan kehebatanku." },
+            { name: "Trisha", jiko: "Pelukis yang hadir di mimpi-mimpi indahmu. One, two, three...sha!" },
+            { name: "Levi", jiko: "Are you ready? Jalani hari ini dengan menari bersamaku. Yuhu, Aku Levi!" },
+            { name: "Nayla", jiko: "Moshi moshi, welcome Naylalaland! Halo semuanya, bakkyun!" },
+            { name: "Nachia", jiko: "Si panda unyu yang selalu ceria! Aku Nachia, bikin kamu bahagia!" },
+            { name: "Oline", jiko: "Semangat ku full terus! Gas, gas, gas-Oline!" },
+            { name: "Ribka", jiko: "Mirror mirror on the wall, who's the sweetest in here? It's me, Ribka." },
+            { name: "Nala", jiko: "Roar! Si singa pemberani yang siap menyemangati harimu." },
+            { name: "Kimmy", jiko: "Baby hamster yang lincah, aku akan berlari-lari di pikiranmu! Haloha, katakan Kimmy!" },
+            { name: "Mikaela", jiko: "Camera... Roll... Action! Sutradara yang akan mewarnai kisah hidupmu dengan penuh warna. Hai Aku Mikaela!" },
+            { name: "Rilly", jiko: "Bagaikan harmoni indah yang berirama di benakmu. Hai Aku Rilly!" },
+            { name: "Maira", jiko: "Penceria yang akan membuatmu tertawa dengan tingkahku. Halo semuanya Aku Maira!" },
+            { name: "Intan", jiko: "Intan permata yang berkilau, temukan cahayaku di hatimu!" },
+            { name: "Gia", jiko: "Dengan semangat dan kerja kerasku. Aku akan membuat kalian bahagia. Halo panggil aku Gia!" },
+            { name: "Virgi", jiko: "Suka berekspresi melalui kreasi. Tara! Aku Virgi!" },
+            { name: "Ekin", jiko: "Sesejuk dan sedingin mint. Perkenalan aku Ekin!" },
+            { name: "Jemima", jiko: "Ci...luk...ba! Merpati yang akan membawa kejutan di setiap penampilanku. Halo aku Jemima!" },
+            { name: "Afera Thalia", jiko: "Satu shoot-ku menciptakan three point di hati kamu." },
+            { name: "Carissa Dini", jiko: "Aku adalah pemberi ramuan kedamaian, only for you!" },
+            { name: "Christabella Bonita", jiko: "Ding-dong! Skate, spin, smile." },
+            { name: "Fahira Putri", jiko: "Sekali senyum langsung buatmu jatuh cinta." },
+            { name: "Fatimah Azzahra", jiko: "Datang bawa tawa, pulang bawa rindu." },
+            { name: "Heidi Suyangga", jiko: "Happy terus tanpa batas. Seno, Hai Hai, Heidy!" },
+            { name: "Maxine Faye", jiko: "Faith, trust, and magical pixie dust." },
+            { name: "Putry Jazyta", jiko: "Musik jazz on, semangat on!" },
+            { name: "Ralyne Van", jiko: "Ready, set, go! Gameplay aku akan menghiburmu!" },
+            { name: "Sona Kalyana", jiko: "Hip-hop! Aku Sona, buat kamu terpesona!" }
+        ];
+
+        const STOP_WORDS = ["yang", "akan", "dan", "aku", "dengan", "untuk", "dari", "ke", "di", "ini", "itu", "halo", "hai", "seperti", "bagaikan", "selalu", "buat", "itu", "ada"];
+
+        // Ekstrak SEMUA keyword untuk pengecoh cerdas (Lebih aman dari karakter aneh)
+        let ALL_KEYWORDS = [];
+        JIKO_DATA.forEach(data => {
+            let words = data.jiko.replace(/[^\w\s]/g, "").split(/\s+/);
+            let clean = words.filter(w => w.length > 3 && !STOP_WORDS.includes(w.toLowerCase())).map(w => w.toLowerCase());
+            clean.forEach(c => ALL_KEYWORDS.push(c));
+        });
+        ALL_KEYWORDS = [...new Set(ALL_KEYWORDS)];
+
+        let pool = [...JIKO_DATA];
+        let correctData = {};
+        let lives = 3;
+        let fullJikoStr = "";
+
+        const jikoTextEl = document.getElementById("jiko-text");
+        const optionsContainer = document.getElementById("options-container");
+        const feedbackEl = document.getElementById("feedback-text");
+        const livesEl = document.getElementById("lives-display");
+        const progressEl = document.getElementById("progress-display");
+        const modalOverlay = document.getElementById("modal-overlay");
+        const modalNextBtn = document.getElementById("modal-next-btn");
+
+        function updateUI() {
+            livesEl.textContent = "❤️".repeat(lives) + "🖤".repeat(3 - lives);
+            progressEl.textContent = `Tersisa: ${pool.length} Jiko`;
+        }
+
+        function extractKeyword(jikoString) {
+            let cleanWords = jikoString.replace(/[^\w\s]/g, "").split(/\s+/);
+            let candidateWords = cleanWords.filter(w => w.length > 3 && !STOP_WORDS.includes(w.toLowerCase()));
+            if (candidateWords.length === 0) {
+                candidateWords = cleanWords;
+            }
+            return candidateWords[Math.floor(Math.random() * candidateWords.length)];
+        }
+
+        function getSmartDistractors(targetWord, count) {
+            let word = targetWord.toLowerCase();
+            
+            let scoredWords = ALL_KEYWORDS.filter(w => w !== word).map(w => {
+                let score = 0;
+                if (w[0] === word[0]) score += 2;
+                if (w.length > 2 && w.slice(-2) === word.slice(-2)) score += 3;
+                if (Math.abs(w.length - word.length) <= 1) score += 1;
+                score += Math.random(); 
+                return { word: w, score: score };
+            });
+
+            scoredWords.sort((a, b) => b.score - a.score);
+            let topCandidates = scoredWords.slice(0, 15).sort(() => Math.random() - 0.5);
+            return topCandidates.slice(0, count).map(obj => obj.word);
+        }
+
+        function loadQuestion(excludeIndex = -1) {
+            if (pool.length === 0) {
+                showModal("🏆 LUAR BIASA!", "Kamu sudah berhasil menebak SEMUA Jiko dengan benar! Wota sejati!", "Ulangi Game");
+                return;
+            }
+
+            feedbackEl.textContent = "";
+            
+            let availableIndices = pool.map((_, i) => i).filter(i => i !== excludeIndex || pool.length === 1);
+            let randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+            
+            const targetData = pool[randomIndex];
+            correctData = { 
+                member: targetData.name, 
+                word: extractKeyword(targetData.jiko), 
+                poolIndex: randomIndex 
+            };
+            fullJikoStr = targetData.jiko;
+
+            let blankStr = "_".repeat(correctData.word.length);
+            // Mencari kata persis di kalimat, abaikan besar kecil huruf
+            let regex = new RegExp(`\\b${correctData.word}\\b`, "i");
+            jikoTextEl.innerHTML = `"${fullJikoStr.replace(regex, `<span class="blank-word">${blankStr}</span>`)}"`;
+
+            let distractors = getSmartDistractors(correctData.word, 3);
+            let options = [{ text: correctData.word, isCorrect: true }];
+            
+            distractors.forEach(d => {
+                options.push({ text: d, isCorrect: false });
+            });
+
+            options.sort(() => Math.random() - 0.5);
+
+            optionsContainer.innerHTML = "";
+            options.forEach(opt => {
+                let btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.textContent = opt.text;
+                btn.onclick = () => handleChoice(opt, btn);
+                optionsContainer.appendChild(btn);
+            });
+            
+            updateUI();
+        }
+
+        function handleChoice(selectedOption, buttonElement) {
+            if (lives <= 0) return;
+
+            if (selectedOption.isCorrect) {
+                buttonElement.classList.add("correct");
+                pool.splice(correctData.poolIndex, 1);
+                
+                showModal("🎉 Tepat Sekali!", `Itu adalah Jiko milik <span class="highlight-member">${correctData.member}</span>.<br><br>"${fullJikoStr}"`, "Lanjut");
+            } else {
+                lives--;
+                updateUI();
+                buttonElement.classList.add("wrong");
+                
+                if (lives === 0) {
+                    showModal("😭 Game Over", `Kata yang benar adalah <span class="highlight-word">${correctData.word}</span>.<br>Jiko ini milik <span class="highlight-member">${correctData.member}</span>:<br><br>"${fullJikoStr}"`, "Main Ulang");
+                } else {
+                    feedbackEl.style.color = "var(--error-bg)";
+                    feedbackEl.textContent = "❌ Salah! Soal diganti. (Sisa nyawa: " + lives + ")";
+                    
+                    document.querySelectorAll('.option-btn').forEach(b => b.style.pointerEvents = 'none');
+                    
+                    setTimeout(() => {
+                        loadQuestion(correctData.poolIndex);
+                    }, 1200);
+                }
+            }
+        }
+
+        function showModal(title, desc, btnText) {
+            setTimeout(() => {
+                document.getElementById("modal-title").innerHTML = title;
+                document.getElementById("modal-desc").innerHTML = desc;
+                modalNextBtn.textContent = btnText;
+                modalOverlay.style.display = "flex";
+            }, 300);
+        }
+
+        function nextQuestion() {
+            modalOverlay.style.display = "none";
+            if (lives === 0 || pool.length === 0) {
+                pool = [...JIKO_DATA];
+                lives = 3;
+            }
+            loadQuestion();
+        }
+
+        updateUI();
+        loadQuestion();
+    </script>
+</body>
+</html>

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tebak Nama Member JKT48</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #2a0815 0%, #120309 100%);
+            --text-color: #ffffff;
+            --border-color: #5c1b2f;
+            --active-border: #ff3366;
+            --correct-bg: #10b981;
+            --present-bg: #f59e0b;
+            --absent-bg: #374151;
+            --key-bg: #4b5563;
+            --jkt-red: #e02424;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        /* Area Navigasi Atas */
+        .top-nav {
+            width: 100%;
+            max-width: 500px;
+            padding: 15px 15px 0;
+            box-sizing: border-box;
+        }
+
+        .back-btn {
+            color: #ffb3c6;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255, 51, 102, 0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 51, 102, 0.3);
+            color: #ffffff;
+            border-color: var(--active-border);
+            transform: translateX(-3px);
+        }
+
+        header {
+            text-align: center;
+            padding: 10px 0 10px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+            background: linear-gradient(to right, #ff4b2b, #ff416c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .version {
+            font-size: 10px;
+            color: #ff3366;
+            vertical-align: top;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            font-weight: bold;
+            background-color: rgba(255, 51, 102, 0.2);
+            border: 1px solid var(--active-border);
+            color: #ffb3c6;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        #board {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 30px;
+            width: 100%;
+            align-items: center;
+        }
+
+        .row {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .tile {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            user-select: none;
+            transition: transform 0.2s, background-color 0.3s, border-color 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .tile.filled {
+            border-color: var(--active-border);
+            transform: scale(1.05);
+        }
+
+        .tile[data-state='correct'] {
+            background-color: var(--correct-bg);
+            border-color: var(--correct-bg);
+            transform: scale(1);
+        }
+
+        .tile[data-state='present'] {
+            background-color: var(--present-bg);
+            border-color: var(--present-bg);
+            transform: scale(1);
+        }
+
+        .tile[data-state='absent'] {
+            background-color: var(--absent-bg);
+            border-color: var(--absent-bg);
+            transform: scale(1);
+        }
+
+        #keyboard {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        .key {
+            background-color: var(--key-bg);
+            color: var(--text-color);
+            border: none;
+            border-radius: 6px;
+            margin: 0 3px;
+            height: 50px;
+            flex: 1;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            outline: none;
+        }
+
+        .key:hover {
+            filter: brightness(1.2);
+        }
+
+        .key:active {
+            transform: scale(0.95);
+        }
+
+        .key.large {
+            flex: 1.5;
+            font-size: 0.85rem;
+            background-color: var(--jkt-red);
+        }
+
+        .key[data-state='correct'] { background-color: var(--correct-bg); }
+        .key[data-state='present'] { background-color: var(--present-bg); }
+        .key[data-state='absent'] { background-color: var(--absent-bg); opacity: 0.6; }
+
+        #modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-box {
+            background: linear-gradient(135deg, #1f1c2c, #928dab);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #ff416c;
+            box-shadow: 0 10px 25px rgba(255, 65, 108, 0.4);
+            max-width: 80%;
+        }
+
+        .modal-message {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        .btn-restart {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        .btn-restart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 75, 43, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Tombol Kembali ke Halaman Utama -->
+    <div class="top-nav">
+        <a href="index.html" class="back-btn">⬅ Menu Utama</a>
+    </div>
+
+    <header>
+        <h1>Wordle JKT48 <span class="version">V5</span></h1>
+        <div class="subtitle" id="game-info">Memuat...</div>
+    </header>
+
+    <div id="board"></div>
+    <div id="keyboard"></div>
+
+    <div id="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-message" id="modal-text"></div>
+            <button class="btn-restart" onclick="resetGame()">Main Lagi</button>
+        </div>
+    </div>
+
+    <script>
+        const RAW_WORDS = [
+            "Anin", "lia", "Lana", "Elin", "Cynthia", "Fiony", "Fritzy", "Gracie", "Lily", "Indah", 
+            "Trisha", "Michie", "Nayla", "Delynn", "Olla", "Freya", "Ella", "Gita", "Greesel", "Eli", 
+            "Lyn", "Marsha", "Nachia", "Oline", "Nala", "Aralie", "Christy", "Erine", "Oniel", "Dena", 
+            "Desy", "Feni", "Jessi", "Kathrina", "Lulu", "Levi", "Muthe", "Raisha", "Ribka", "Kimmy", 
+            "Fera", "Virgi", "Rilly", "Carissa", "Bella", "Fahira", "Rara", "Gia", "Heidi", "maira", 
+            "Ekin", "Jemima", "Maxine", "Mikaela", "Intan", "Jazzy", "Ralyne", "Sona"
+        ];
+        
+        const WORDS = RAW_WORDS.map(word => word.trim().toUpperCase());
+        
+        let targetWord, WORD_LENGTH;
+        const MAX_GUESSES = 6;
+        let guesses = [];
+        let currentGuess = "";
+        let isGameOver = false;
+        
+        const board = document.getElementById("board");
+        const keyboard = document.getElementById("keyboard");
+        const gameInfo = document.getElementById("game-info");
+        const modalOverlay = document.getElementById("modal-overlay");
+        const modalText = document.getElementById("modal-text");
+
+        function setupGameVariables() {
+            targetWord = WORDS[Math.floor(Math.random() * WORDS.length)];
+            WORD_LENGTH = targetWord.length;
+            guesses = [];
+            currentGuess = "";
+            isGameOver = false;
+            gameInfo.textContent = `Tebak nama member — ${WORD_LENGTH} huruf`;
+        }
+        
+        function initBoard() {
+            board.innerHTML = ""; 
+            for (let i = 0; i < MAX_GUESSES; i++) {
+                let row = document.createElement("div");
+                row.className = "row";
+                for (let j = 0; j < WORD_LENGTH; j++) {
+                    let tile = document.createElement("div");
+                    tile.className = "tile";
+                    tile.setAttribute("id", `tile-${i}-${j}`);
+                    row.appendChild(tile);
+                }
+                board.appendChild(row);
+            }
+        }
+
+        function initKeyboard() {
+            keyboard.innerHTML = ""; 
+            const keys = [
+                ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+                ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
+                ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "DEL"]
+            ];
+
+            keys.forEach(row => {
+                let keyboardRow = document.createElement("div");
+                keyboardRow.className = "keyboard-row";
+                row.forEach(key => {
+                    let button = document.createElement("button");
+                    button.textContent = key;
+                    button.className = "key";
+                    button.setAttribute("data-key", key);
+                    
+                    if (key === "ENTER" || key === "DEL") {
+                        button.classList.add("large");
+                    }
+                    
+                    button.onclick = (e) => {
+                        handleKeyPress(key);
+                        e.target.blur(); 
+                    };
+                    keyboardRow.appendChild(button);
+                });
+                keyboard.appendChild(keyboardRow);
+            });
+        }
+
+        function updateBoard() {
+            for (let i = 0; i < WORD_LENGTH; i++) {
+                let tile = document.getElementById(`tile-${guesses.length}-${i}`);
+                let letter = currentGuess[i] || "";
+                tile.textContent = letter;
+                
+                if (letter) {
+                    tile.classList.add("filled");
+                } else {
+                    tile.classList.remove("filled");
+                }
+            }
+        }
+
+        function submitGuess() {
+            if (currentGuess.length !== WORD_LENGTH) return;
+            
+            let guessArr = currentGuess.split("");
+            let targetArr = targetWord.split("");
+            let tileStates = new Array(WORD_LENGTH).fill("absent");
+            let keyStates = {};
+
+            for (let i = 0; i < WORD_LENGTH; i++) {
+                if (guessArr[i] === targetArr[i]) {
+                    tileStates[i] = "correct";
+                    targetArr[i] = null;
+                    keyStates[guessArr[i]] = "correct";
+                }
+            }
+
+            for (let i = 0; i < WORD_LENGTH; i++) {
+                if (tileStates[i] === "absent" && targetArr.includes(guessArr[i])) {
+                    tileStates[i] = "present";
+                    targetArr[targetArr.indexOf(guessArr[i])] = null;
+                    if (keyStates[guessArr[i]] !== "correct") {
+                        keyStates[guessArr[i]] = "present";
+                    }
+                } else if (tileStates[i] === "absent") {
+                    if (!keyStates[guessArr[i]]) keyStates[guessArr[i]] = "absent";
+                }
+            }
+
+            for (let i = 0; i < WORD_LENGTH; i++) {
+                let tile = document.getElementById(`tile-${guesses.length}-${i}`);
+                tile.setAttribute("data-state", tileStates[i]);
+                tile.classList.remove("filled");
+            }
+
+            for (let key in keyStates) {
+                let btn = document.querySelector(`button[data-key='${key}']`);
+                let currentState = btn.getAttribute("data-state");
+                if (currentState !== "correct") {
+                    btn.setAttribute("data-state", keyStates[key]);
+                }
+            }
+
+            guesses.push(currentGuess);
+            
+            if (currentGuess === targetWord) {
+                isGameOver = true;
+                showModal("🎉 Luar biasa!<br>Tebakan kamu benar.");
+            } else if (guesses.length === MAX_GUESSES) {
+                isGameOver = true;
+                showModal(`😭 Percobaan habis.<br>Jawabannya adalah: <br><strong>${targetWord}</strong>`);
+            }
+            
+            currentGuess = "";
+        }
+
+        function showModal(message) {
+            setTimeout(() => {
+                modalText.innerHTML = message;
+                modalOverlay.style.display = "flex";
+            }, 600); 
+        }
+
+        function resetGame() {
+            modalOverlay.style.display = "none";
+            document.activeElement.blur();
+            startGame();
+        }
+
+        function handleKeyPress(key) {
+            if (isGameOver || guesses.length >= MAX_GUESSES) return;
+
+            if (key === "ENTER") {
+                submitGuess();
+            } else if (key === "DEL" || key === "BACKSPACE") {
+                currentGuess = currentGuess.slice(0, -1);
+                updateBoard();
+            } else if (/^[A-Z]$/.test(key) && currentGuess.length < WORD_LENGTH) {
+                currentGuess += key;
+                updateBoard();
+            }
+        }
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+            }
+            let key = e.key.toUpperCase();
+            handleKeyPress(key);
+        });
+
+        function startGame() {
+            setupGameVariables();
+            initBoard();
+            initKeyboard();
+        }
+
+        startGame();
+    </script>
+</body>
+</html>

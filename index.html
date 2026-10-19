@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Game JKT48</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #2a0815 0%, #120309 100%);
+            --text-color: #ffffff;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border-color: #5c1b2f;
+            --hover-border: #ff3366;
+            --btn-gradient: linear-gradient(to right, #ff416c, #ff4b2b);
+            --btn-disabled: #4b5563;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5rem;
+            background: var(--btn-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        p.desc {
+            color: #ffb3c6;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 40px;
+        }
+
+        /* Struktur Layout Grid untuk Kartu Game */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            width: 90%;
+            max-width: 1000px;
+            padding-bottom: 50px;
+        }
+
+        .game-card {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .game-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--hover-border);
+            box-shadow: 0 15px 30px rgba(255, 51, 102, 0.2);
+        }
+
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .game-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .game-desc {
+            font-size: 0.95rem;
+            color: #d1d5db;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        .play-btn {
+            background: var(--btn-gradient);
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: transform 0.2s;
+            display: inline-block;
+            border: none;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .play-btn.disabled {
+            background: var(--btn-disabled);
+            cursor: not-allowed;
+            pointer-events: none;
+            color: #9ca3af;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: #ff3366;
+            color: white;
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .badge.spicy {
+            background-color: #ef4444; /* Merah untuk Skandal */
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>JKT48 Fan Games</h1>
+        <p class="desc">Uji pengetahuanmu! Pilih mini-game di bawah ini dan buktikan kalau kamu fans sejati.</p>
+    </header>
+
+    <div class="game-grid">
+        <!-- Game 1: Tebak Nama -->
+        <div class="game-card">
+            <div>
+                <div class="badge">Hot</div>
+                <div class="icon">🔤</div>
+                <div class="game-title">Tebak Nama</div>
+                <div class="game-desc">Cari tahu nama member JKT48 tersembunyi dalam 6 kesempatan. Mirip Wordle tapi versi Wota!</div>
+            </div>
+            <a href="Tebak-nama.html" class="play-btn">Mainkan Sekarang</a>
+        </div>
+
+        <!-- Game 2: Cari Kata -->
+        <div class="game-card">
+            <div>
+                <div class="badge">Seru</div>
+                <div class="icon">🔍</div>
+                <div class="game-title">Cari Nama</div>
+                <div class="game-desc">Temukan nama member yang tersembunyi secara mendatar, menurun, atau menyilang di dalam kotak.</div>
+            </div>
+            <a href="cari-kata.html" class="play-btn">Mainkan Sekarang</a>
+        </div>
+
+        <!-- Game 3: Tebak Jiko -->
+        <div class="game-card">
+            <div>
+                <div class="badge">Asyik</div>
+                <div class="icon">🗣️</div>
+                <div class="game-title">Tebak Jiko</div>
+                <div class="game-desc">Hafal Jikoshoukai member? Pilih kombinasi kata dan pemilik Jiko tersebut dengan tepat!</div>
+            </div>
+            <a href="tebak-jiko.html" class="play-btn">Mainkan Sekarang</a>
+        </div>
+
+        <!-- Game 4: Tebak Skandal -->
+        <div class="game-card">
+            <div>
+                <div class="badge spicy">Memicu Adrenalin</div>
+                <div class="icon">📸</div>
+                <div class="game-title">Tebak Skandal</div>
+                <div class="game-desc">Uji pengetahuanmu tentang kasus legendaris ex-member dari era klasik hingga modern. Berani main?</div>
+            </div>
+            <a href="tebak-skandal.html" class="play-btn">Mainkan Sekarang</a>
+        </div>
+    </div>
+
+</body>
+</html>
