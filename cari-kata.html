@@ -25,7 +25,7 @@
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            touch-action: none; /* Mencegah layar scroll saat drag di HP */
+            touch-action: none; 
         }
 
         .top-nav {
@@ -131,13 +131,14 @@
 
         .word-item {
             background: rgba(255, 255, 255, 0.1);
-            padding: 6px 12px;
+            padding: 8px 15px;
             border-radius: 15px;
-            font-size: 0.95rem;
+            font-size: 1.05rem;
             font-weight: bold;
             color: #ffffff;
             transition: all 0.3s;
             border: 1px solid var(--border-color);
+            letter-spacing: 2px; /* Jarak huruf diperlebar agar bintang terlihat jelas */
         }
 
         .word-item.found-word {
@@ -145,7 +146,8 @@
             color: white;
             text-decoration: line-through;
             border-color: var(--found-bg);
-            opacity: 0.6;
+            opacity: 0.8;
+            letter-spacing: normal;
         }
 
         /* Modal Overlay */
@@ -199,7 +201,7 @@
 
     <header>
         <h1>Cari Nama</h1>
-        <div class="subtitle">Temukan 6 nama member yang tersembunyi (Tarik garisnya!)</div>
+        <div class="subtitle">Tebak siapa dia dan temukan di kotak (Tarik garisnya!)</div>
     </header>
 
     <div id="word-board"></div>
@@ -239,15 +241,29 @@
 
         function getRandomInt(max) { return Math.floor(Math.random() * max); }
 
+        // Fungsi penyensoran cerdas (menyembunyikan ~50% huruf)
+        function maskWord(word) {
+            let arr = word.split("");
+            let maskCount = Math.ceil(word.length / 2);
+            let masked = 0;
+            
+            while (masked < maskCount) {
+                let randIdx = getRandomInt(word.length);
+                if (arr[randIdx] !== "*") {
+                    arr[randIdx] = "*";
+                    masked++;
+                }
+            }
+            return arr.join("");
+        }
+
         function generateGrid() {
             grid = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(""));
             activeWords = [];
             
-            // Pilih 6 kata acak
             let shuffled = [...ALL_MEMBERS].sort(() => 0.5 - Math.random());
             let wordsToPlace = shuffled.slice(0, WORDS_TO_FIND);
 
-            // Arah: Kanan, Bawah, Diagonal Kanan-Bawah
             const directions = [ [0,1], [1,0], [1,1] ];
 
             wordsToPlace.forEach(word => {
@@ -267,7 +283,6 @@
                 }
             });
 
-            // Isi kotak kosong dengan huruf acak
             const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             for (let r = 0; r < BOARD_SIZE; r++) {
                 for (let c = 0; c < BOARD_SIZE; c++) {
@@ -308,23 +323,22 @@
                     cell.dataset.row = r;
                     cell.dataset.col = c;
                     
-                    // Event Listener untuk Mouse & Touch
                     cell.addEventListener("pointerdown", handlePointerDown);
                     cell.addEventListener("pointerenter", handlePointerEnter);
                     boardEl.appendChild(cell);
                 }
             }
-            // Pointerup diletakkan di window agar tidak bug saat melepas klik di luar kotak
             window.addEventListener("pointerup", handlePointerUp);
         }
 
         function renderList() {
             listEl.innerHTML = "";
             activeWords.forEach(word => {
+                let masked = maskWord(word);
                 let div = document.createElement("div");
                 div.className = "word-item";
                 div.id = `word-${word}`;
-                div.textContent = word;
+                div.textContent = masked;
                 listEl.appendChild(div);
             });
         }
@@ -341,7 +355,6 @@
             if (!isSelecting) return;
             let currentCell = { row: parseInt(e.target.dataset.row), col: parseInt(e.target.dataset.col) };
             
-            // Validasi agar pemilihan hanya bisa garis lurus (Mendatar, Menurun, atau Diagonal)
             let rDiff = currentCell.row - startCell.row;
             let cDiff = currentCell.col - startCell.col;
             
@@ -366,7 +379,6 @@
             if (!isSelecting) return;
             isSelecting = false;
             
-            // Dapatkan kata yang dibentuk dari jalur yang dipilih
             let wordFormed = selectedPath.map(pos => grid[pos.row][pos.col]).join("");
             let wordReversed = wordFormed.split("").reverse().join("");
 
@@ -381,7 +393,11 @@
 
         function markAsFound(word, path) {
             foundWordsList.push(word);
-            document.getElementById(`word-${word}`).classList.add("found-word");
+            
+            // Membuka sensor teks saat ditebak benar
+            let wordItemEl = document.getElementById(`word-${word}`);
+            wordItemEl.textContent = word;
+            wordItemEl.classList.add("found-word");
             
             path.forEach(pos => {
                 let cell = document.querySelector(`.cell[data-row='${pos.row}'][data-col='${pos.col}']`);
@@ -410,7 +426,6 @@
             renderList();
         }
 
-        // Jalankan game
         initGame();
     </script>
 </body>
